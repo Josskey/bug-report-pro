@@ -37,6 +37,7 @@ type Store = {
   loadMode: () => void;
   setProAccess: (email: string, value: boolean) => void;
   loadProAccess: (email: string) => void;
+  syncProAccessFromServer: () => Promise<void>;
   startTimer: () => void;
   stopTimer: () => void;
   getElapsedTime: () => number;
@@ -106,6 +107,25 @@ export const useAppStore = create<Store>((set, get) => ({
     const raw = localStorage.getItem("pro-access-map");
     const map: Record<string, boolean> = raw ? JSON.parse(raw) : {};
     set({ hasProAccess: map[email] === true });
+  },
+
+  // 🔗 Синхронизация с сервером
+  syncProAccessFromServer: async () => {
+    try {
+      const API = import.meta.env.VITE_API_URL;
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`${API}/api/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const meData = await res.json();
+        set({ hasProAccess: meData.hasProAccess === true });
+      }
+    } catch {
+      console.warn("Не удалось синхронизировать Pro‑доступ");
+    }
   },
 
   startTimer: () => {
@@ -185,6 +205,7 @@ export const useAppStore = create<Store>((set, get) => ({
     localStorage.removeItem("bug-history");
     localStorage.removeItem("start-time");
     localStorage.removeItem("card-progress");
+    localStorage.removeItem("pro-access-map");
     set({
       history: [],
       result: null,
