@@ -18,11 +18,15 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, password: hashed }
+      data: { email, password: hashed, hasProAccess: false } // ✅ добавляем поле
     });
 
-    res.json({ message: "Регистрация успешна", user: { id: user.id, email: user.email } });
+    res.json({
+      message: "Регистрация успешна",
+      user: { id: user.id, email: user.email, hasProAccess: user.hasProAccess }
+    });
   } catch (err) {
+    console.error("Ошибка регистрации:", err);
     res.status(500).json({ error: "Ошибка сервера" });
   }
 };
@@ -37,12 +41,23 @@ export const loginUser = async (req: Request, res: Response) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: "Неверный email или пароль" });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
+    // ✅ можно включить hasProAccess в токен, но необязательно
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    res.json({ message: "Вход выполнен", token });
+    res.json({
+      message: "Вход выполнен",
+      token,
+      user: { id: user.id, email: user.email, hasProAccess: user.hasProAccess }
+    });
   } catch (err) {
+    console.error("Ошибка входа:", err);
     res.status(500).json({ error: "Ошибка сервера" });
   }
 };
+
 
 
