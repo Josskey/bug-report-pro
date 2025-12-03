@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../store/useAppStore";
+import { getMe } from "../api"; // ✅ используем api.ts
 
 const Layout = () => {
   const navigate = useNavigate();
@@ -14,34 +15,18 @@ const Layout = () => {
   useEffect(() => {
     loadMode();
 
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    (async () => {
+      const meData = await getMe();
+      if (meData?.email) {
+        setUserEmail(meData.email);
+        localStorage.setItem("userEmail", meData.email);
 
-    const API = import.meta.env.VITE_API_URL;
-
-    fetch(`${API}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          if (res.status === 401) {
-            localStorage.removeItem("token");
-            setUserEmail("");
-          }
-          return;
-        }
-        const data = await res.json();
-        if (data?.email) {
-          setUserEmail(data.email);
-          localStorage.setItem("userEmail", data.email);
-
-          // ✅ обновляем Pro‑статус корректно
-          setProAccess(data.email, data.hasProAccess === true);
-        }
-      })
-      .catch(() => {
+        // ✅ обновляем Pro‑статус через Zustand
+        setProAccess(meData.email, meData.hasProAccess);
+      } else {
         setUserEmail("");
-      });
+      }
+    })();
   }, [setProAccess, loadMode]);
 
   const handleLogout = () => {
@@ -103,6 +88,7 @@ const Layout = () => {
 };
 
 export default Layout;
+
 
 
 
