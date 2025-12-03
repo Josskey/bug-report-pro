@@ -6,33 +6,43 @@ on:
       - main
 
 jobs:
-  migrate:
+  create-migration:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+
+    env:
+      # Временная локальная база для CI, чтобы prisma мог создать миграцию
+      DATABASE_URL: "file:./ci-dev.db"
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
 
       - name: Install dependencies
-        run: |
-          cd server
-          npm ci
+        run: npm ci
 
-      - name: Create migration (without applying)
+      - name: Create migration (no apply) and generate client
         run: |
-          cd server
           npx prisma migrate dev --name auto_migration --create-only
           npx prisma generate
 
       - name: Commit and push migrations
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add server/prisma/migrations
-          git commit -m "CI: add new Prisma migration"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add prisma/migrations
+          # Если нет новых миграций — коммит упадёт; это ок, просто пропустим
+          git commit -m "CI: add Prisma migration" || echo "No changes to commit"
           git push
