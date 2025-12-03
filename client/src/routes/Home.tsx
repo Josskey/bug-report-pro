@@ -34,6 +34,10 @@ const Home = () => {
       if (meData?.email) {
         localStorage.setItem("userEmail", meData.email);
         setProAccess(meData.email, meData.hasProAccess);
+      } else {
+        // если токен невалиден или сервер вернул ошибку — сбрасываем состояние
+        localStorage.removeItem("userEmail");
+        setProAccess("", false);
       }
     })();
 
@@ -178,6 +182,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 
