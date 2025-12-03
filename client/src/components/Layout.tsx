@@ -8,7 +8,6 @@ const Layout = () => {
 
   const hasProAccess = useAppStore((s) => s.hasProAccess);
   const setProAccess = useAppStore((s) => s.setProAccess);
-  const loadProAccess = useAppStore((s) => s.loadProAccess);
   const loadMode = useAppStore((s) => s.loadMode);
   const mode = useAppStore((s) => s.mode);
 
@@ -18,13 +17,9 @@ const Layout = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const pendingEmail = sessionStorage.getItem("pendingProEmail");
-    if (pendingEmail) {
-      setProAccess(pendingEmail, true);
-      sessionStorage.removeItem("pendingProEmail");
-    }
+    const API = import.meta.env.VITE_API_URL;
 
-    fetch("/api/me", {
+    fetch(`${API}/api/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(async (res) => {
@@ -36,16 +31,18 @@ const Layout = () => {
           return;
         }
         const data = await res.json();
-        if (data?.user?.email) {
-          setUserEmail(data.user.email);
-          localStorage.setItem("userEmail", data.user.email);
-          loadProAccess(data.user.email);
+        if (data?.email) {
+          setUserEmail(data.email);
+          localStorage.setItem("userEmail", data.email);
+
+          // обновляем Pro‑статус
+          setProAccess(data.email, data.hasProAccess === true);
         }
       })
       .catch(() => {
         setUserEmail("");
       });
-  }, [loadProAccess, setProAccess, loadMode]);
+  }, [setProAccess, loadMode]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -60,7 +57,6 @@ const Layout = () => {
       return;
     }
 
-    sessionStorage.setItem("pendingProEmail", userEmail);
     window.location.href =
       "https://yoomoney.ru/transfer/quickpay?requestId=353632393636373635365f38333333353566356433613762363331643539383530353831393761396261323261343137343664";
   };
@@ -107,6 +103,7 @@ const Layout = () => {
 };
 
 export default Layout;
+
 
 
 
