@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getMe } from "../api"; // ✅ используем api.ts
 
 export type BugReport = {
   id: string;
@@ -38,6 +39,7 @@ type Store = {
   setProAccess: (email: string, value: boolean) => void;
   loadProAccess: (email: string) => void;
   syncProAccessFromServer: () => Promise<void>;
+  activateProDemo: (email: string) => void; // ✅ имитация активации Pro
   startTimer: () => void;
   stopTimer: () => void;
   getElapsedTime: () => number;
@@ -109,23 +111,25 @@ export const useAppStore = create<Store>((set, get) => ({
     set({ hasProAccess: map[email] === true });
   },
 
-  // 🔗 Синхронизация с сервером
+  // 🔗 Синхронизация с сервером через api.ts
   syncProAccessFromServer: async () => {
     try {
-      const API = import.meta.env.VITE_API_URL;
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const res = await fetch(`${API}/api/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const meData = await res.json();
-        set({ hasProAccess: meData.hasProAccess === true });
+      const meData = await getMe();
+      if (meData?.email) {
+        set({ hasProAccess: meData.hasProAccess });
       }
     } catch {
       console.warn("Не удалось синхронизировать Pro‑доступ");
     }
+  },
+
+  // ✅ Имитация активации Pro (для демо)
+  activateProDemo: (email) => {
+    const raw = localStorage.getItem("pro-access-map");
+    const map: Record<string, boolean> = raw ? JSON.parse(raw) : {};
+    map[email] = true;
+    localStorage.setItem("pro-access-map", JSON.stringify(map));
+    set({ hasProAccess: true });
   },
 
   startTimer: () => {
@@ -216,6 +220,7 @@ export const useAppStore = create<Store>((set, get) => ({
     });
   }
 }));
+
 
 
 
