@@ -29,15 +29,16 @@ export async function getMe() {
   if (!token) return null;
 
   const res = await fetch(`${API}/api/me`, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store" // ⛔ отключаем кэш, чтобы получить свежий ответ
   });
   if (!res.ok) return null;
 
   const data = await res.json();
 
-  // сервер возвращает { user: {...}, hasProAccess: true }
+  // сервер возвращает { user: { email, hasProAccess } }
   const userEmail = data?.user?.email ?? null;
-  const pro = data?.hasProAccess === true;
+  const pro = data?.user?.hasProAccess === true;
 
   if (!userEmail) return null;
 
