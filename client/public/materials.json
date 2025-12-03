@@ -1,0 +1,16 @@
+[
+  {
+    "id": "qa-intro",
+    "title": "Основы тестирования ПО",
+    "description": "Методичка по базовым принципам QA",
+    "file": "/materials/qa-intro.pdf",
+    "addedAt": "30.11.2025, 16:50"
+  },
+  {
+    "id": "ui-checklist",
+    "title": "Чеклист UI-тестирования",
+    "description": "Полезный список для визуальной проверки интерфейса",
+    "file": "/materials/ui-checklist.pdf",
+    "addedAt": "30.11.2025, 17:10"
+  }
+]
