@@ -34,9 +34,16 @@ export async function getMe() {
   if (!res.ok) return null;
 
   const data = await res.json();
+
   // сервер возвращает { user: {...}, hasProAccess: true }
+  const userEmail = data?.user?.email ?? null;
+  const pro = data?.hasProAccess === true;
+
+  if (!userEmail) return null;
+
   return {
-    email: data.user?.email,
-    hasProAccess: data.hasProAccess === true
+    email: userEmail,
+    hasProAccess: pro
   };
 }
+
