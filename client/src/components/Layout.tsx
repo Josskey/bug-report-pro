@@ -35,7 +35,7 @@ const Layout = () => {
           setUserEmail(data.email);
           localStorage.setItem("userEmail", data.email);
 
-          // обновляем Pro‑статус
+          // ✅ обновляем Pro‑статус корректно
           setProAccess(data.email, data.hasProAccess === true);
         }
       })
@@ -103,6 +103,7 @@ const Layout = () => {
 };
 
 export default Layout;
+
 
 
 
