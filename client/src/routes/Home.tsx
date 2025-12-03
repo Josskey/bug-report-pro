@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../store/useAppStore";
+import { getMe } from "../api"; // ✅ используем api.ts
 
 type Material = {
   id: string;
@@ -19,7 +20,7 @@ const Home = () => {
 
   const isCardUnlocked = useAppStore((s) => s.isCardUnlocked);
   const hasProAccess = useAppStore((s) => s.hasProAccess);
-  const syncProAccessFromServer = useAppStore((s) => s.syncProAccessFromServer);
+  const setProAccess = useAppStore((s) => s.setProAccess);
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [error, setError] = useState(false);
@@ -27,8 +28,14 @@ const Home = () => {
   useEffect(() => {
     loadMode();
 
-    // 🔗 подтягиваем актуальный Pro‑статус с сервера
-    syncProAccessFromServer();
+    // 🔗 подтягиваем актуальный Pro‑статус с сервера через api.ts
+    (async () => {
+      const meData = await getMe();
+      if (meData?.email) {
+        localStorage.setItem("userEmail", meData.email);
+        setProAccess(meData.email, meData.hasProAccess);
+      }
+    })();
 
     if (mode === "theory") {
       const API = import.meta.env.VITE_API_URL;
@@ -40,7 +47,7 @@ const Home = () => {
         .then(setMaterials)
         .catch(() => setError(true));
     }
-  }, [mode, loadMode, syncProAccessFromServer]);
+  }, [mode, loadMode, setProAccess]);
 
   const checkUnlocked = (id: string) => {
     if (mode === "timed" && hasProAccess) {
@@ -171,6 +178,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 
