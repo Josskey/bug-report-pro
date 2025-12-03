@@ -31,7 +31,8 @@ jobs:
 
       - name: Create migration using diff
         run: |
-          MIGRATION_DIR="prisma/migrations/$(date +%s)_auto_migration"
+          TIMESTAMP=$(date +%s)
+          MIGRATION_DIR="prisma/migrations/${TIMESTAMP}_auto_migration"
           mkdir -p "$MIGRATION_DIR"
           npx prisma migrate diff \
             --from-empty \
