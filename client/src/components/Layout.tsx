@@ -24,7 +24,10 @@ const Layout = () => {
         // ✅ обновляем Pro‑статус через Zustand
         setProAccess(meData.email, meData.hasProAccess);
       } else {
+        // если токен невалиден или сервер вернул ошибку — сбрасываем состояние
         setUserEmail("");
+        localStorage.removeItem("userEmail");
+        setProAccess("", false);
       }
     })();
   }, [setProAccess, loadMode]);
@@ -33,6 +36,7 @@ const Layout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     setUserEmail("");
+    setProAccess("", false); // сбросить Pro‑статус при выходе
     navigate("/login");
   };
 
