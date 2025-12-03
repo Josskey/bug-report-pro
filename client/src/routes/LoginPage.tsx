@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAppStore } from "../store/useAppStore"; // ✅ подключаем Zustand
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const setProAccess = useAppStore((s) => s.setProAccess);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,15 +19,32 @@ export default function LoginPage() {
     }
 
     try {
-      const API = import.meta.env.VITE_API_URL; // ✅ берём из .env
+      const API = import.meta.env.VITE_API_URL;
       const res = await fetch(`${API}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();
+
       if (res.ok) {
+        // сохраняем токен
         localStorage.setItem("token", data.token);
+
+        // подтягиваем данные пользователя
+        const meRes = await fetch(`${API}/api/me`, {
+          headers: { Authorization: `Bearer ${data.token}` }
+        });
+        const meData = await meRes.json();
+
+        if (meRes.ok) {
+          // сохраняем сессию
+          localStorage.setItem("session", JSON.stringify(meData));
+
+          // обновляем Pro‑статус в Zustand
+          setProAccess(meData.email, meData.hasProAccess === true);
+        }
+
         navigate("/home");
       } else {
         setError(data.error || "Ошибка входа");
@@ -67,5 +86,6 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
