@@ -19,6 +19,7 @@ const Home = () => {
 
   const isCardUnlocked = useAppStore((s) => s.isCardUnlocked);
   const hasProAccess = useAppStore((s) => s.hasProAccess);
+  const syncProAccessFromServer = useAppStore((s) => s.syncProAccessFromServer);
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [error, setError] = useState(false);
@@ -26,13 +27,20 @@ const Home = () => {
   useEffect(() => {
     loadMode();
 
+    // 🔗 подтягиваем актуальный Pro‑статус с сервера
+    syncProAccessFromServer();
+
     if (mode === "theory") {
-      fetch("/materials.json")
-        .then((res) => res.json())
+      const API = import.meta.env.VITE_API_URL;
+      fetch(`${API}/materials.json`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Ошибка загрузки");
+          return res.json();
+        })
         .then(setMaterials)
         .catch(() => setError(true));
     }
-  }, [mode, loadMode]);
+  }, [mode, loadMode, syncProAccessFromServer]);
 
   const checkUnlocked = (id: string) => {
     if (mode === "timed" && hasProAccess) {
@@ -163,6 +171,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 
