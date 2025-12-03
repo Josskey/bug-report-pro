@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-
-const globalForPrisma = global as unknown as { prisma?: PrismaClient };
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
-if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
+import { prisma } from "../prisma/client"; // ✅ используем общий клиент
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
@@ -18,7 +14,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, password: hashed, hasProAccess: false } // ✅ добавляем поле
+      data: { email, password: hashed, hasProAccess: false } // ✅ поле Pro
     });
 
     res.json({
@@ -41,7 +37,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: "Неверный email или пароль" });
 
-    // ✅ можно включить hasProAccess в токен, но необязательно
+    // ✅ токен можно расширить, но пока оставим только id и email
     const token = jwt.sign(
       { id: user.id, email: user.email },
       JWT_SECRET,
