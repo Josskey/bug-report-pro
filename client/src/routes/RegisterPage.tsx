@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAppStore } from "../store/useAppStore";
-import { register, getMe } from "../api"; // ✅ используем api.ts
+import { register } from "../api"; // ✅ только register
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const setProAccess = useAppStore((s) => s.setProAccess);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -31,21 +29,9 @@ export default function RegisterPage() {
     }
 
     try {
-      // вызываем register из api.ts
       await register(email, password);
-
-      // подтягиваем данные пользователя
-      const meData = await getMe();
-      if (meData?.email) {
-        localStorage.setItem("session", JSON.stringify(meData));
-        localStorage.setItem("userEmail", meData.email);
-
-        // обновляем Pro‑статус в Zustand
-        setProAccess(meData.email, meData.hasProAccess);
-      }
-
       setSuccess("Регистрация успешна!");
-      setTimeout(() => navigate("/home"), 800);
+      setTimeout(() => navigate("/login"), 1000); // ✅ переход на вход
     } catch (err: any) {
       setError(err.message || "Ошибка регистрации");
     }
@@ -91,6 +77,7 @@ export default function RegisterPage() {
     </div>
   );
 }
+
 
 
 
