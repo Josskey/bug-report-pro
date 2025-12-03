@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAppStore } from "../store/useAppStore"; // ✅ подключаем Zustand
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const setProAccess = useAppStore((s) => s.setProAccess);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -28,16 +30,34 @@ export default function RegisterPage() {
     }
 
     try {
-      // Используй относительный путь, чтобы работало с Vite proxy
-      const res = await fetch("/api/register", {
+      const API = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${API}/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();
+
       if (res.ok) {
+        // сохраняем токен
+        localStorage.setItem("token", data.token);
+
+        // подтягиваем данные пользователя
+        const meRes = await fetch(`${API}/api/me`, {
+          headers: { Authorization: `Bearer ${data.token}` }
+        });
+        const meData = await meRes.json();
+
+        if (meRes.ok) {
+          // сохраняем сессию
+          localStorage.setItem("session", JSON.stringify(meData));
+
+          // обновляем Pro‑статус в Zustand
+          setProAccess(meData.email, meData.hasProAccess === true);
+        }
+
         setSuccess("Регистрация успешна!");
-        setTimeout(() => navigate("/login"), 800);
+        setTimeout(() => navigate("/home"), 800);
       } else {
         setError(data.error || "Ошибка регистрации");
       }
@@ -86,4 +106,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
 
