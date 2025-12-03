@@ -17,8 +17,8 @@ export default function LoginPage() {
     }
 
     try {
-      // Используй относительный путь, чтобы работало с Vite proxy
-      const res = await fetch("/api/login", {
+      const API = import.meta.env.VITE_API_URL; // ✅ берём из .env
+      const res = await fetch(`${API}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -67,4 +67,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
