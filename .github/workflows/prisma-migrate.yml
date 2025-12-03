@@ -31,18 +31,17 @@ jobs:
 
       - name: Create migration using diff
         run: |
-          mkdir -p prisma/migrations/$(date +%s)_auto_migration
+          MIGRATION_DIR="prisma/migrations/$(date +%s)_auto_migration"
+          mkdir -p "$MIGRATION_DIR"
           npx prisma migrate diff \
             --from-empty \
             --to-schema-datamodel prisma/schema.prisma \
-            --script > prisma/migrations/$(date +%s)_auto_migration/migration.sql
+            --script > "$MIGRATION_DIR/migration.sql"
           npx prisma generate
 
       - name: Commit and push migrations
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add prisma/migrations
-          git commit -m "CI: add Prisma migration" || echo "No changes to commit"
-          git push
-
+          git add prisma/migrations || echo "Nothing to add"
+          git diff --cached --quiet || (git commit -m "CI: add Prisma migration" && git push)
