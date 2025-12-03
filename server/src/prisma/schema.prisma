@@ -13,6 +13,7 @@ model User {
   password     String
   role         String   @default("user")
   createdAt    DateTime @default(now())
-  hasProAccess Boolean  @default(false) // ✅ новое поле
+  hasProAccess Boolean  @default(false)
 }
+
 
