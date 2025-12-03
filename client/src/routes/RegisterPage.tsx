@@ -48,12 +48,16 @@ export default function RegisterPage() {
         });
         const meData = await meRes.json();
 
-        if (meRes.ok) {
+        if (meRes.ok && meData?.user?.email) {
+          const userEmail = meData.user.email;
+          const pro = meData.hasProAccess === true;
+
           // сохраняем сессию
           localStorage.setItem("session", JSON.stringify(meData));
+          localStorage.setItem("userEmail", userEmail);
 
           // обновляем Pro‑статус в Zustand
-          setProAccess(meData.email, meData.hasProAccess === true);
+          setProAccess(userEmail, pro);
         }
 
         setSuccess("Регистрация успешна!");
@@ -106,5 +110,6 @@ export default function RegisterPage() {
     </div>
   );
 }
+
 
 
