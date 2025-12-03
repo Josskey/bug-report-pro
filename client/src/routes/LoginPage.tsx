@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAppStore } from "../store/useAppStore"; // ✅ подключаем Zustand
+import { useAppStore } from "../store/useAppStore";
+import { login, getMe } from "../api"; // ✅ используем api.ts
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -19,42 +20,22 @@ export default function LoginPage() {
     }
 
     try {
-      const API = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
+      // вызываем login из api.ts
+      await login(email, password);
 
-      if (res.ok) {
-        // сохраняем токен
-        localStorage.setItem("token", data.token);
+      // подтягиваем данные пользователя
+      const meData = await getMe();
+      if (meData?.email) {
+        localStorage.setItem("session", JSON.stringify(meData));
+        localStorage.setItem("userEmail", meData.email);
 
-        // подтягиваем данные пользователя
-        const meRes = await fetch(`${API}/api/me`, {
-          headers: { Authorization: `Bearer ${data.token}` }
-        });
-        const meData = await meRes.json();
-
-        if (meRes.ok && meData?.user?.email) {
-          const userEmail = meData.user.email;
-          const pro = meData.hasProAccess === true;
-
-          // сохраняем сессию
-          localStorage.setItem("session", JSON.stringify(meData));
-          localStorage.setItem("userEmail", userEmail);
-
-          // обновляем Pro‑статус в Zustand
-          setProAccess(userEmail, pro);
-        }
-
-        navigate("/home");
-      } else {
-        setError(data.error || "Ошибка входа");
+        // обновляем Pro‑статус в Zustand
+        setProAccess(meData.email, meData.hasProAccess);
       }
-    } catch {
-      setError("Ошибка подключения к серверу");
+
+      navigate("/home");
+    } catch (err: any) {
+      setError(err.message || "Ошибка входа");
     }
   };
 
@@ -90,6 +71,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
 
