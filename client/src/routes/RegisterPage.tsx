@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAppStore } from "../store/useAppStore"; // ✅ подключаем Zustand
+import { useAppStore } from "../store/useAppStore";
+import { register, getMe } from "../api"; // ✅ используем api.ts
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -30,43 +31,23 @@ export default function RegisterPage() {
     }
 
     try {
-      const API = import.meta.env.VITE_API_URL;
-      const res = await fetch(`${API}/api/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
+      // вызываем register из api.ts
+      await register(email, password);
 
-      if (res.ok) {
-        // сохраняем токен
-        localStorage.setItem("token", data.token);
+      // подтягиваем данные пользователя
+      const meData = await getMe();
+      if (meData?.email) {
+        localStorage.setItem("session", JSON.stringify(meData));
+        localStorage.setItem("userEmail", meData.email);
 
-        // подтягиваем данные пользователя
-        const meRes = await fetch(`${API}/api/me`, {
-          headers: { Authorization: `Bearer ${data.token}` }
-        });
-        const meData = await meRes.json();
-
-        if (meRes.ok && meData?.user?.email) {
-          const userEmail = meData.user.email;
-          const pro = meData.hasProAccess === true;
-
-          // сохраняем сессию
-          localStorage.setItem("session", JSON.stringify(meData));
-          localStorage.setItem("userEmail", userEmail);
-
-          // обновляем Pro‑статус в Zustand
-          setProAccess(userEmail, pro);
-        }
-
-        setSuccess("Регистрация успешна!");
-        setTimeout(() => navigate("/home"), 800);
-      } else {
-        setError(data.error || "Ошибка регистрации");
+        // обновляем Pro‑статус в Zustand
+        setProAccess(meData.email, meData.hasProAccess);
       }
-    } catch {
-      setError("Ошибка подключения к серверу");
+
+      setSuccess("Регистрация успешна!");
+      setTimeout(() => navigate("/home"), 800);
+    } catch (err: any) {
+      setError(err.message || "Ошибка регистрации");
     }
   };
 
@@ -110,6 +91,7 @@ export default function RegisterPage() {
     </div>
   );
 }
+
 
 
 
