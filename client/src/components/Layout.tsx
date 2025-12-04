@@ -40,14 +40,33 @@ const Layout = () => {
     navigate("/login");
   };
 
-  const handleBuyPro = () => {
+  const handleBuyPro = async () => {
     if (!userEmail) {
       alert("Сначала войдите в аккаунт");
       return;
     }
 
-    window.location.href =
-      "https://yoomoney.ru/transfer/quickpay?requestId=353632393636373635365f38333333353566356433613762363331643539383530353831393761396261323261343137343664";
+    try {
+      // 🔗 имитация оплаты + активация Pro на сервере
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activate-pro`, {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+
+      if (data?.user?.email) {
+        setProAccess(data.user.email, data.user.hasProAccess);
+        alert("✅ Pro аккаунт активирован!");
+      } else {
+        alert("Ошибка активации Pro");
+      }
+    } catch (err) {
+      alert("Ошибка соединения при активации Pro");
+    }
   };
 
   return (
@@ -92,8 +111,6 @@ const Layout = () => {
 };
 
 export default Layout;
-
-
 
 
 
