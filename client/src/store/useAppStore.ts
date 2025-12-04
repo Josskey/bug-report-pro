@@ -39,7 +39,7 @@ type Store = {
   setProAccess: (email: string, value: boolean) => void;
   loadProAccess: (email: string) => void;
   syncProAccessFromServer: () => Promise<void>;
-  activateProDemo: (email: string) => void; // ✅ имитация активации Pro
+  activateProDemo: (email: string) => void;
   startTimer: () => void;
   stopTimer: () => void;
   getElapsedTime: () => number;
@@ -115,7 +115,7 @@ export const useAppStore = create<Store>((set, get) => ({
   syncProAccessFromServer: async () => {
     try {
       const meData = await getMe();
-      if (meData?.email) {
+      if (meData?.email && typeof meData.hasProAccess === "boolean") {
         set({ hasProAccess: meData.hasProAccess });
       }
     } catch {
@@ -220,6 +220,7 @@ export const useAppStore = create<Store>((set, get) => ({
     });
   }
 }));
+
 
 
 
