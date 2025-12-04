@@ -8,7 +8,7 @@
     "dev": "ts-node-dev src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "migrate": "prisma migrate deploy"
+    "prisma:push": "prisma db push && prisma generate"
   },
   "keywords": [
     "express",
@@ -41,4 +41,5 @@
     "node": ">=18"
   }
 }
+
 
