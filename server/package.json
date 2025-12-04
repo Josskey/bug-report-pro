@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "dev": "ts-node-dev src/index.ts",
-    "build": "tsc",
+    "build": "npm run prisma:push && tsc",
     "start": "node dist/index.js",
     "prisma:push": "prisma db push && prisma generate"
   },
