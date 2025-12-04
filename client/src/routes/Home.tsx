@@ -34,7 +34,9 @@ const Home = () => {
         const meData = await getMe();
         if (meData?.email) {
           localStorage.setItem("userEmail", meData.email);
-          setProAccess(meData.email, meData.hasProAccess);
+          if (typeof meData.hasProAccess === "boolean") {
+            setProAccess(meData.email, meData.hasProAccess);
+          }
         } else {
           localStorage.removeItem("userEmail");
           setProAccess("", false);
@@ -186,6 +188,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 
