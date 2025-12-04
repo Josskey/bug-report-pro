@@ -30,20 +30,24 @@ const Home = () => {
 
     // 🔗 подтягиваем актуальный Pro‑статус с сервера через api.ts
     (async () => {
-      const meData = await getMe();
-      if (meData?.email) {
-        localStorage.setItem("userEmail", meData.email);
-        setProAccess(meData.email, meData.hasProAccess);
-      } else {
-        // если токен невалиден или сервер вернул ошибку — сбрасываем состояние
+      try {
+        const meData = await getMe();
+        if (meData?.email) {
+          localStorage.setItem("userEmail", meData.email);
+          setProAccess(meData.email, meData.hasProAccess);
+        } else {
+          localStorage.removeItem("userEmail");
+          setProAccess("", false);
+        }
+      } catch {
         localStorage.removeItem("userEmail");
         setProAccess("", false);
       }
     })();
 
     if (mode === "theory") {
-      const API = import.meta.env.VITE_API_URL;
-      fetch(`${API}/materials.json`)
+      // ⚡ материалы теперь грузим напрямую с Netlify (client/public/materials.json)
+      fetch("/materials.json")
         .then((res) => {
           if (!res.ok) throw new Error("Ошибка загрузки");
           return res.json();
@@ -182,6 +186,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 
