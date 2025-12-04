@@ -37,9 +37,9 @@ export const loginUser = async (req: Request, res: Response) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: "Неверный email или пароль" });
 
-    // ⚡ Добавляем hasProAccess в токен
+    // ⚡ Токен содержит id и email (hasProAccess можно не класть — всё равно проверяем в базе)
     const token = jwt.sign(
-      { id: user.id, email: user.email, hasProAccess: user.hasProAccess },
+      { id: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -57,9 +57,11 @@ export const loginUser = async (req: Request, res: Response) => {
 
 // 🔥 Новый контроллер для активации Pro
 export const activatePro = async (req: Request, res: Response) => {
-  const { userId } = req.body; // или бери из токена
-
   try {
+    // ⚡ Берём id из токена (authGuard кладёт его в req.user)
+    const userId = (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: "Нет доступа" });
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { hasProAccess: true }
@@ -74,6 +76,7 @@ export const activatePro = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Ошибка сервера" });
   }
 };
+
 
 
 
