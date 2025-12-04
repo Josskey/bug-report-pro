@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { prisma } from "../prisma/client"; // ✅ используем общий клиент
+import { prisma } from "../prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
@@ -14,7 +14,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, password: hashed, hasProAccess: false } // ✅ поле Pro
+      data: { email, password: hashed, hasProAccess: false }
     });
 
     res.json({
@@ -37,9 +37,9 @@ export const loginUser = async (req: Request, res: Response) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ error: "Неверный email или пароль" });
 
-    // ✅ токен можно расширить, но пока оставим только id и email
+    // ⚡ Добавляем hasProAccess в токен
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, hasProAccess: user.hasProAccess },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -54,6 +54,27 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Ошибка сервера" });
   }
 };
+
+// 🔥 Новый контроллер для активации Pro
+export const activatePro = async (req: Request, res: Response) => {
+  const { userId } = req.body; // или бери из токена
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { hasProAccess: true }
+    });
+
+    res.json({
+      message: "Pro активирован",
+      user: { id: updated.id, email: updated.email, hasProAccess: updated.hasProAccess }
+    });
+  } catch (err) {
+    console.error("Ошибка активации Pro:", err);
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
+
 
 
 
