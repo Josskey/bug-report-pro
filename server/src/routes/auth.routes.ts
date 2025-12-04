@@ -1,14 +1,15 @@
 import { Router } from "express";
-import { registerUser, loginUser } from "../controllers/auth.controller";
+import { registerUser, loginUser, activatePro } from "../controllers/auth.controller";
 import { authGuard } from "../middleware/authGuard";
 import { prisma } from "../prisma/client"; // ✅ убедись, что путь к клиенту правильный
 
 const router = Router();
 
+// Регистрация и вход
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 
-// ✅ Проверка токена / получение текущего пользователя с Pro‑доступом
+// Проверка токена / получение текущего пользователя с Pro‑доступом
 router.get("/me", authGuard, async (req, res) => {
   try {
     const userId = (req as any).user?.id;
@@ -19,7 +20,7 @@ router.get("/me", authGuard, async (req, res) => {
       select: {
         id: true,
         email: true,
-        hasProAccess: true // ✅ добавляем это поле
+        hasProAccess: true
       }
     });
 
@@ -32,6 +33,10 @@ router.get("/me", authGuard, async (req, res) => {
   }
 });
 
+// 🔥 Новый роут для активации Pro
+router.post("/activate-pro", authGuard, activatePro);
+
 export default router;
+
 
 
