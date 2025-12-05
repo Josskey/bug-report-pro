@@ -57,18 +57,38 @@ VITE_API_URL=https://bug-report-pro.onrender.com
 ## 📁 Структура проекта
 
 ```bash
-client/
-  src/
-    api.ts          # Работа с API
-    store/          # Zustand Store
-    pages/          # Страницы (Home, Login, Profile и др.)
-    components/     # UI-компоненты
-  public/
-    materials.json  # Теоретические материалы
-server/
-  src/
-    routes/         # API ручки (login, register, me, activate-pro)
-    prisma/         # Схема базы данных
+client/ — фронтенд на React + TypeScript  
+├── public/ — материалы, редиректы, иконки  
+├── src/ — исходный код  
+│   ├── components/ — UI-компоненты (карточки, бейджи, лейауты)  
+│   ├── data/ — тестовые объекты  
+│   ├── fonts/ — шрифты (Roboto)  
+│   ├── logic/ — бизнес-логика  
+│   ├── assets/ — SVG и медиа  
+│   ├── pages/ — страницы приложения  
+│   ├── store/ — Zustand-хранилище  
+│   └── api.ts — работа с API
+
+server/ — бэкенд на Node.js + Prisma  
+├── src/ — исходный TypeScript-код  
+│   ├── controllers/ — логика авторизации  
+│   ├── middleware/ — защита маршрутов  
+│   ├── prisma/ — клиент и схема БД  
+│   ├── routes/ — API-ручки  
+│   └── index.ts — точка входа  
+├── dist/ — скомпилированный JS-код  
+│   └── generated/prisma/ — Prisma-обёртки и модели  
+├── prisma/ — миграции и схема  
+│   └── migrations/ — история изменений БД  
+│   └── schema.prisma — описание моделей
+
+📄 Корневые файлы  
+├── README.md — документация проекта  
+├── package.json — зависимости и скрипты  
+├── tsconfig.json — конфигурация TypeScript  
+├── vite.config.ts — конфигурация Vite  
+├── tailwind.config.js — стилизация  
+├── .gitignore — исключения для Git
 ```
 
 ## 📈 Планы развития
