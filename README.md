@@ -82,7 +82,7 @@ server/ — бэкенд на Node.js + Prisma
 │   └── migrations/ — история изменений БД  
 │   └── schema.prisma — описание моделей
 
-📄 Корневые файлы  
+Корневые файлы  
 ├── README.md — документация проекта  
 ├── package.json — зависимости и скрипты  
 ├── tsconfig.json — конфигурация TypeScript  
